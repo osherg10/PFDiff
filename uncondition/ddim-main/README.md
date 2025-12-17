@@ -114,6 +114,19 @@ The above two cases contain some hard-coded lines specific to producing the imag
 
 This implementation is based on / inspired by:
 
-- [https://github.com/hojonathanho/diffusion](https://github.com/hojonathanho/diffusion) (the DDPM TensorFlow repo), 
+- [https://github.com/hojonathanho/diffusion](https://github.com/hojonathanho/diffusion) (the DDPM TensorFlow repo),
 - [https://github.com/pesser/pytorch_diffusion](https://github.com/pesser/pytorch_diffusion) (PyTorch helper that loads the DDPM model), and
 - [https://github.com/ermongroup/ncsnv2](https://github.com/ermongroup/ncsnv2) (code structure).
+
+## Integrating a discrete diffusion model
+
+The runners now instantiate models through `models/factory.py`. To plug in a
+discrete or token-based architecture while keeping the same training/sampling
+loops:
+
+1. Set `model.name: discrete` in your config to select the discrete pathway.
+2. Implement your custom logic inside `models/discrete_diffusion.py` (the
+   placeholder currently mirrors the `(pred_x0, score)` interface expected by
+   PFDiff).
+3. Launch training or sampling as usual; the runner will automatically pick up
+   the discrete model without further code changes.
