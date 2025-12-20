@@ -143,13 +143,21 @@ class Diffusion(object):
                 x = data_transform(self.config, x)
                 e = torch.randn_like(x)
                 b = self.betas
+                mask = None
+                if isinstance(y, dict):
+                    mask = y.get("mask")
+                    if mask is not None:
+                        mask = mask.to(self.device)
 
                 # antithetic sampling
                 t = torch.randint(
                     low=0, high=self.num_timesteps, size=(n // 2 + 1,)
                 ).to(self.device)
                 t = torch.cat([t, self.num_timesteps - t - 1], dim=0)[:n]
-                loss = loss_registry[config.model.type](model, x, t, e, b)
+                if getattr(config.model, "name", None) == "discrete":
+                    loss = loss_registry["discrete"](model, x, t, e, b, mask=mask)
+                else:
+                    loss = loss_registry[config.model.type](model, x, t, e, b)
 
                 tb_logger.add_scalar("loss", loss, global_step=step)
 
