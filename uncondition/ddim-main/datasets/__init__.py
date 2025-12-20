@@ -7,6 +7,7 @@ from torchvision.datasets import CIFAR10
 from datasets.celeba import CelebA
 from datasets.ffhq import FFHQ
 from datasets.lsun import LSUN
+from datasets.shapenet_octree import ShapeNetOctreeDataset
 from torch.utils.data import Subset
 import numpy as np
 
@@ -175,6 +176,29 @@ def get_dataset(args, config):
         )
         test_dataset = Subset(dataset, test_indices)
         dataset = Subset(dataset, train_indices)
+    elif config.data.dataset == "SHAPENET_OCTREE":
+        data_root = getattr(
+            config.data,
+            "root",
+            os.path.join(args.exp, "datasets", "shapenet_octree"),
+        )
+        train_split = getattr(config.data, "train_split", "train")
+        test_split = getattr(config.data, "test_split", "test")
+        category = config.data.category
+        dataset = ShapeNetOctreeDataset(
+            root=data_root,
+            category=category,
+            split=train_split,
+            return_mask=getattr(config.data, "return_mask", True),
+            manifest=getattr(config.data, "train_manifest", None),
+        )
+        test_dataset = ShapeNetOctreeDataset(
+            root=data_root,
+            category=category,
+            split=test_split,
+            return_mask=getattr(config.data, "return_mask", True),
+            manifest=getattr(config.data, "test_manifest", None),
+        )
     else:
         dataset, test_dataset = None, None
 
