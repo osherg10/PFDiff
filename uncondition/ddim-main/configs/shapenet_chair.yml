@@ -1,0 +1,54 @@
+data:
+    dataset: "SHAPENET_OCTREE"
+    category: "chair"
+    root: "/path/to/shapenet_octree"
+    train_split: "train"
+    test_split: "test"
+    return_mask: true
+    image_size: 1
+    channels: 1
+    logit_transform: false
+    uniform_dequantization: false
+    gaussian_dequantization: false
+    random_flip: false
+    rescaled: false
+    num_workers: 8
+
+model:
+    name: "discrete"
+    type: "simple"
+    vocab_size: 256
+    hidden_dim: 256
+    num_layers: 6
+    num_heads: 8
+    dropout: 0.1
+    var_type: fixedlarge
+    ema_rate: 0.999
+    ema: True
+    resamp_with_conv: True
+
+diffusion:
+    beta_schedule: sigmoid
+    beta_start: 0.0001
+    beta_end: 0.01
+    num_diffusion_timesteps: 200
+
+training:
+    batch_size: 32
+    n_epochs: 300
+    n_iters: 300000
+    snapshot_freq: 1000
+    validation_freq: 500
+
+sampling:
+    batch_size: 32
+    last_only: True
+
+optim:
+    weight_decay: 0.01
+    optimizer: "Adam"
+    lr: 0.0003
+    beta1: 0.9
+    amsgrad: false
+    eps: 0.00000001
+    grad_clip: 1.0
