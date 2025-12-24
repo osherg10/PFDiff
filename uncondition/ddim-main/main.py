@@ -9,6 +9,8 @@ import torch
 import numpy as np
 import torch.utils.tensorboard as tb
 
+from gaussian_export import export_folder
+
 torch.set_printoptions(sci_mode=False)
 
 
@@ -113,6 +115,24 @@ def parse_args_and_config():
         type=str,
         default=None,
         help="Path to a test/validation manifest (.txt) listing octree token files; overrides the config value if provided.",
+    )
+    parser.add_argument(
+        "--export_gaussians",
+        action="store_true",
+        help="After sampling a discrete octree model, convert the generated tokens to Gaussian splats.",
+    )
+    parser.add_argument(
+        "--export_format",
+        type=str,
+        default="ply",
+        choices=["ply", "json"],
+        help="File format for Gaussian export when --export_gaussians is set.",
+    )
+    parser.add_argument(
+        "--export_max_depth",
+        type=int,
+        default=None,
+        help="Octree depth to use when reconstructing splats (defaults to config.data.max_depth if present).",
     )
 
     args = parser.parse_args()
@@ -247,6 +267,10 @@ def dict2namespace(config):
 
 def main():
     args, config = parse_args_and_config()
+    if args.export_max_depth is None and hasattr(getattr(config, "data", object()), "max_depth"):
+        args.export_max_depth = getattr(config.data, "max_depth")
+    if args.export_gaussians and args.export_max_depth is None:
+        raise ValueError("--export_gaussians requires --export_max_depth or data.max_depth in the config")
     logging.info("Writing log file to {}".format(args.log_path))
     logging.info("Exp instance id = {}".format(os.getpid()))
     logging.info("Exp comment = {}".format(args.comment))
@@ -260,6 +284,15 @@ def main():
         runner = Diffusion(args, config)
         if args.sample:
             runner.sample()
+            if args.export_gaussians:
+                logging.info(
+                    "Exporting Gaussian splats from sampled octree tokens in %s", args.image_folder
+                )
+                export_folder(
+                    args.image_folder,
+                    max_depth=args.export_max_depth,
+                    output_format=args.export_format,
+                )
         elif args.test:
             runner.test()
         else:
