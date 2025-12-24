@@ -50,6 +50,17 @@ Our code is based on modifications of the [DDIM](https://github.com/ermongroup/d
 - dpm-solver: We use `sample.sh` to run the code. If you want to run dpm++, please modify the `sampling.algorithm_type` in the file `dpm-solver/examples/score_sde_pytorch/configs/vp/cifar10_ddpmpp_deep_continuous.py` to `'dpmsolver++'`.
 All algorithms can be run by modifying the `algorithms` parameter in the file.
 
+### Discrete diffusion training for octree tokens (project proposal)
+- We provide a discrete diffusion baseline for 3D Gaussian splatting via octree tokenization under `uncondition/ddim-main`. Use the `shapenet_chair.yml` config as a template.
+- Launch training with a custom dataset root and manifests using the new overrides in `main.py`:
+  ```bash
+  cd uncondition/ddim-main
+  python main.py --config shapenet_chair.yml --exp ./exp --doc octree_run \
+    --octree_root /path/to/shapenet_octree --octree_category chair \
+    --octree_train_manifest /path/to/train.txt --octree_test_manifest /path/to/test.txt
+  ```
+- The flags keep the original training loop intact while letting you point to your octree token data without editing the YAML file. This makes it easier to reproduce and iterate on the discrete diffusion variant described in the project brief.
+
 # Results
 ![Alt text](assets/Sampling_Results.png)
 
