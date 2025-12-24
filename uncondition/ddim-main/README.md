@@ -130,3 +130,28 @@ loops:
    PFDiff).
 3. Launch training or sampling as usual; the runner will automatically pick up
    the discrete model without further code changes.
+
+## Exporting octree samples to Gaussian splats
+
+Discrete ShapeNet experiments yield octree token arrays (see
+`scripts/preprocess_shapenet_octree.py` for the on-disk format). After sampling
+with a discrete octree model, you can directly turn these token files into
+Gaussian splats using the built-in exporter:
+
+```bash
+python main.py \
+    --config shapenet_chair.yml \
+    --exp /path/to/experiment_root \
+    --doc sample_octree \
+    --sample --ni \
+    --image_folder sampled_tokens \
+    --export_gaussians --export_format ply
+```
+
+- The exporter looks for `.npz` or `.npy` token files inside the chosen
+  `--image_folder` and writes `.ply` (or `.json`) files alongside them.
+- By default it uses `data.max_depth` from the config; override this with
+  `--export_max_depth` if your tokenizer used a different octree depth.
+- Gaussian attributes are written in the standard per-vertex PLY fields
+  (`x, y, z, scale_x, scale_y, scale_z, red, green, blue, opacity`) and can be
+  consumed by viewers or splatting pipelines.

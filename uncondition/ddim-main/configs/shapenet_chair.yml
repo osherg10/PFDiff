@@ -5,6 +5,7 @@ data:
     train_split: "train"
     test_split: "test"
     return_mask: true
+    max_depth: 6
     image_size: 1
     channels: 1
     logit_transform: false
