@@ -90,6 +90,30 @@ def parse_args_and_config():
     parser.add_argument(
         "--algorithm", type=str, default="origin", help="algorithm used"
     )
+    parser.add_argument(
+        "--octree_root",
+        type=str,
+        default=None,
+        help="Optional override for the ShapeNet octree dataset root when training the discrete diffusion model.",
+    )
+    parser.add_argument(
+        "--octree_category",
+        type=str,
+        default=None,
+        help="Optional override for the ShapeNet octree category (e.g., chair, airplane).",
+    )
+    parser.add_argument(
+        "--octree_train_manifest",
+        type=str,
+        default=None,
+        help="Path to a train manifest (.txt) listing octree token files; overrides the config value if provided.",
+    )
+    parser.add_argument(
+        "--octree_test_manifest",
+        type=str,
+        default=None,
+        help="Path to a test/validation manifest (.txt) listing octree token files; overrides the config value if provided.",
+    )
 
     args = parser.parse_args()
     args.log_path = os.path.join(args.exp, "logs", args.doc)
@@ -98,6 +122,15 @@ def parse_args_and_config():
     with open(os.path.join("configs", args.config), "r") as f:
         config = yaml.safe_load(f)
     new_config = dict2namespace(config)
+
+    if getattr(args, "octree_root", None) and hasattr(new_config, "data"):
+        new_config.data.root = args.octree_root
+    if getattr(args, "octree_category", None) and hasattr(new_config, "data"):
+        new_config.data.category = args.octree_category
+    if getattr(args, "octree_train_manifest", None) and hasattr(new_config, "data"):
+        new_config.data.train_manifest = args.octree_train_manifest
+    if getattr(args, "octree_test_manifest", None) and hasattr(new_config, "data"):
+        new_config.data.test_manifest = args.octree_test_manifest
 
     tb_path = os.path.join(args.exp, "tensorboard", args.doc)
 
